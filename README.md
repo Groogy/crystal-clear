@@ -22,10 +22,10 @@ require "crystal-clear"
 
 Everything else happens magically with metaprogramming in the library. All you now need to do is provide the contracts that will specify how the class and its methods are supposed to behave. The tools you need to keep in mind are `requires`, `ensures`, `invariants` and `enforce_contracts`. These macros are where the magic happens. 
 
-* `requires` describes something a method expects to be true before calling it, usually used with incoming arguments. It is the contract that it expects from you when using that method. 
-* `ensures` is the methods contract to you, what it ensures to be true when the method returns (no matter from what branch in the method returns from). 
-* `invariants` define something that must always be true and is done on a class level, it is a contract promising when entering or leaving its methods that something will be true. 
-* `enforce_contract` is a helper macro for when you want to test the invariant contracts but don't have any requires or ensures for this specific method.
+* `requires(method, condition)` describes something a method expects to be true before calling it, usually used with incoming arguments. It is the expection of the contract when using that method. 
+* `ensures(method, condition)` is the expectation you can put on the method, what it ensures to be true when the method returns (no matter from what branch in the method returns from). The return value of the method is available in the variable `return_value`.
+* `invariants(condition)` define something that must always be true and is done on a class level, it is a contract promising when entering or leaving its methods that something will be true. 
+* `enforce_contract(method)` is a helper macro for when you want to test the invariant contracts but don't have any requires or ensures for this specific method.
 
 ```crystal
 require "crystal-clear"
@@ -37,20 +37,20 @@ class FooBar
     @val = 5
   end
 
-  requires(test_meth(val), val > 0)
-  ensures(test_meth(val), return_value > 0)
-  def test_meth(val)
+  requires(test_method(val), val > 0)
+  ensures(test_method(val), return_value > 0)
+  def test_method(val)
     100 / val + 1
   end
 
-  requires(test_meth(val), val > 0)
-  ensures(test_meth(val), return_value > 0)
+  requires(bad_method(val), val > 0)
+  ensures(test_method(val), return_value > 0)
   def bad_method(val)
     @val = nil # Will throw an exception because this is not okay!
     100 / val + 1
   end
 
-  enforce_contracts(fixes_internally)
+  enforce_contracts(break_internally)
   def break_internally
     @val = nil # Will throw an exception because this is not okay! 
   end
