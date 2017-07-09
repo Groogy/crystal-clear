@@ -22,10 +22,10 @@ require "crystal-clear"
 
 Everything else happens magically with metaprogramming in the library. All you now need to do is provide the contracts that will specify how the class and its methods are supposed to behave. The tools you need to keep in mind are `requires`, `ensures`, `invariants` and `enforce_contracts`. These macros are where the magic happens. 
 
-`requires` describes something a method expects to be true before calling it, usually used with incoming arguments. It is the contract that it expects from you when using that method. 
-`ensures` is the methods contract to you, what it ensures to be true when the method returns (no matter from what branch in the method returns from). 
-`invariants` define something that must always be true and is done on a class level, it is a contract promising when entering or leaving its methods that something will be true. 
-`enforce_contract` is a helper macro for when you want to test the invariant contracts but don't have any requires or ensures for this specific method.
+* `requires` describes something a method expects to be true before calling it, usually used with incoming arguments. It is the contract that it expects from you when using that method. 
+* `ensures` is the methods contract to you, what it ensures to be true when the method returns (no matter from what branch in the method returns from). 
+* `invariants` define something that must always be true and is done on a class level, it is a contract promising when entering or leaving its methods that something will be true. 
+* `enforce_contract` is a helper macro for when you want to test the invariant contracts but don't have any requires or ensures for this specific method.
 
 ```crystal
 require "crystal-clear"
