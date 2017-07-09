@@ -1,6 +1,6 @@
 # crystal-clear
 
-Crystal Clear is a small little library with minimal overhead for you who is bad at maintaining the specs for your project by moving that into be more inline on the project. It implements the Design by Contract approach which let's you define what a method, even a whole class, is supposed to behave. Most of the code is gneerated at compile time but the little that has an overhead at runtime will not generate if you turn on the --release flag to Crystal.
+Crystal Clear is a small little library with minimal overhead for you who is bad at maintaining the specs for your project. It does this by moving that into be more inline on the project and keep the specs source local. It implements the Design by Contract approach which let's you define what the behaviour for a method, even a whole class, is supposed to be. Most of the code is gneerated at compile time but the little that has an overhead at runtime will not generate if you turn on the --release flag to Crystal.
 
 ## Installation
 
@@ -62,6 +62,14 @@ class FooBar
   end
 end
 ```
+
+## Future Features
+
+I've added some future proofing structure so that I can add more cool features but it needs a lot more work from me. THough as I add features it should not break the interface you work towards so it is still safe to use without risk of breakage.
+
+* Spec-like breakdown of failed and fullfilled contracts. You should be able to run the contracts in a non-defensive method (i.e not throw exceptions) which then instead provides a breakdown in a logged format of what contracts are broken.
+* Better configuration, should be able to set yourself from your own code if the contracts should be enabled or not at compile time, or even runtime.
+
 
 ## Contributing
 
