@@ -83,4 +83,4 @@ If you have ideas on how to develop this library more or what features it is mis
 
 ## Contributors
 
-- [Groogy(https://github.com/Groogy)  - creator, maintainer
+- [Groogy](https://github.com/Groogy)  - creator, maintainer
