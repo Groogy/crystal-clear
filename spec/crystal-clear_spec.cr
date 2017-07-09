@@ -37,7 +37,7 @@ describe CrystalClear do
   it "should throw exception for failed requirement" do
     obj = FooBar.new
 
-    expect_raises(CrystalClear::Exception) do 
+    expect_raises(CrystalClear::ContractException) do 
       obj.test_meth(0)
     end
   end
@@ -45,14 +45,14 @@ describe CrystalClear do
   it "should throw exception for failed ensurance" do
     obj = FooBar.new
 
-    expect_raises(CrystalClear::Exception) do 
+    expect_raises(CrystalClear::ContractException) do 
       obj.test_meth(-10)
     end
   end
 
   it "should throw exception for failed invariant" do
     obj = FooBar.new
-    expect_raises(CrystalClear::Exception) do 
+    expect_raises(CrystalClear::ContractException) do 
       obj.break_internally()
     end
   end

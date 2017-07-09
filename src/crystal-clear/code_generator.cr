@@ -9,14 +9,14 @@ macro finished
             if CONTRACT_DATA.call_depth == 1
               {% for condition in definition[3] %}
                 if(({{condition}}) == false)
-                  raise CrystalClear::Exception.new("Failed {{klass}} invariant contract: " + {{condition.stringify}})
+                  raise CrystalClear::ContractException.new("Failed {{klass}} invariant contract: " + {{condition.stringify}})
                 end
               {% end %}
             end
             {% for condition in definition[1] %}
               {% if condition[0] == func %}
                 if(({{condition[1]}}) == false)
-                  raise CrystalClear::Exception.new("Failed {{klass}} require contract: " + {{condition[1].stringify}})
+                  raise CrystalClear::ContractException.new("Failed {{klass}} require contract: " + {{condition[1].stringify}})
                 end
               {% end%}
             {% end %}
@@ -24,14 +24,14 @@ macro finished
             {% for condition in definition[2] %}
               {% if condition[0] == func %}
                 if(({{condition[1]}}) == false)
-                  raise CrystalClear::Exception.new("Failed {{klass}} ensure contract: " + {{condition[1].stringify}})
+                  raise CrystalClear::ContractException.new("Failed {{klass}} ensure contract: " + {{condition[1].stringify}})
                 end
               {% end %}
             {% end %}
             if CONTRACT_DATA.call_depth == 1
               {% for condition in definition[3] %}
                 if(({{condition}}) == false)
-                  raise CrystalClear::Exception.new("Failed {{klass}} invariant contract: " + {{condition.stringify}})
+                  raise CrystalClear::ContractException.new("Failed {{klass}} invariant contract: " + {{condition.stringify}})
                 end
               {% end %}
             end

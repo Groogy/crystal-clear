@@ -53,3 +53,12 @@ macro enforce_contracts(func)
   {% end %}
   {% CrystalClear::CLASS_COMPILE_DATA[@type] = definition %}
 end
+
+macro assert(condition)
+  {% if CrystalClear::Config::IS_ENABLED %}
+    if(({{condition}}) == false)
+      raise CrystalClear::AssertException.new
+    end
+  {% else %}
+  {% end %}
+end
