@@ -44,7 +44,7 @@ class FooBar
   end
 
   requires(bad_method(val), val > 0)
-  ensures(test_method(val), return_value > 0)
+  ensures(bad_method(val), return_value > 0)
   def bad_method(val)
     @val = nil # Will throw an exception because this is not okay!
     100 / val + 1
@@ -67,6 +67,8 @@ end
 
 I've added some future proofing structure so that I can add more cool features but it needs a lot more work from me. THough as I add features it should not break the interface you work towards so it is still safe to use without risk of breakage.
 
+* New Attribute style syntax for contracts, `@[Requires(val > 0)]` which won't require method symbol.
+* Remove the need for `enforce_contracts` macro, we can generate that code automatically.
 * Spec-like breakdown of failed and fullfilled contracts. You should be able to run the contracts in a non-defensive method (i.e not throw exceptions) which then instead provides a breakdown in a logged format of what contracts are broken.
 * Better configuration, should be able to set yourself from your own code if the contracts should be enabled or not at compile time, or even runtime.
 
