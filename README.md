@@ -32,7 +32,7 @@ require "crystal-clear"
 class FooBar
   include CrystalClear
 
-  invariant(@val != nil)
+  invariant @val != nil
 
   def initialize(@val)
   end
