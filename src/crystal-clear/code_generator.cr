@@ -11,56 +11,84 @@ module CrystalClear
     macro method_added(method)
       \{% name = method.name %}
       \{% args = method.args %}
-      \{% if Contracts::CONTRACTED_METHODS.includes?(method) == false %}
+      \{% hash = name.stringify + "(" + args.splat.stringify + ")" %}
+      \{% if  !Contracts::CONTRACTED_METHODS.includes?(hash) && 
+              !Contracts::IGNORED_METHODS.includes?(name.stringify) &&
+              !Contracts::IGNORED_METHODS.includes?(hash) %}
         \{% if Contracts::CONTRACTS[:next_def] == nil %}
-          \{% Contracts::CONTRACTED_METHODS << method %}
-        \{% else %}
-          \{% Contracts::CONTRACTED_METHODS << method %}
-          \{% contracts = Contracts::CONTRACTS[:next_def] %}
-
-          \{% if (name.starts_with?("contract_pre_") || name.starts_with?("contract_post_") ||
-                  name.starts_with?("contract_requires_") || name.starts_with?("contract_ensures_")) == false %}
-            def \{{("contract_pre_" + name.stringify).id}}(\{{args.splat}})
-            test_invariant_contracts(\{{name.stringify}})
-              \{{("contract_requires_" + name.stringify).id}}(\{{args.splat}})
-            end
-
-            def \{{("contract_post_" + name.stringify).id}}(return_value, \{{args.splat}})
-              \{{("contract_ensures_" + name.stringify).id}}(return_value, \{{args.splat}})
-              test_invariant_contracts(\{{name.stringify}})
-            end
-
-            def \{{("contract_requires_" + name.stringify).id}}(\{{args.splat}})
-              \{% for c in contracts %}
-                \{% stage = c[0]; condition = c[1] %}
-                \{% if stage == :requires %}
-                  if (\{{condition}}) == false
-                    Contracts.on_contract_fail(:requires, \{{condition.stringify}}, \{{name.stringify}})
-                  end
-                \{% end %}
-              \{% end %}
-            end
-
-            def \{{("contract_ensures_" + name.stringify).id}}(return_value, \{{args.splat}})
-              \{% for c in contracts %}
-                \{% stage = c[0]; condition = c[1] %}
-                \{% if stage == :ensures %}
-                  if (\{{condition}}) == false
-                    Contracts.on_contract_fail(:ensures, \{{condition.stringify}}, \{{name.stringify}})
-                  end
-                \{% end %}
-              \{% end %}
-            end
-
-            def \{{method.name}}(\{{args.splat}})
-              \{{("contract_pre_" + name.stringify).id}}(\{{args.splat}})
+          \{% Contracts::CONTRACTED_METHODS << hash %}
+          def \{{name}}(\{{args.splat}})
+            begin
+              Contracts::CLASS_DATA.call_depth += 1
+              if Contracts::CLASS_DATA.call_depth == 1
+                test_invariant_contracts(\{{name.stringify}})
+              end
               return_value = previous_def
-              \{{("contract_post_" + name.stringify).id}}(return_value, \{{args.splat}})
+              if Contracts::CLASS_DATA.call_depth == 1
+                test_invariant_contracts(\{{name.stringify}})
+              end
               return return_value
+            ensure
+              Contracts::CLASS_DATA.call_depth -= 1
             end
-            \{% Contracts::CONTRACTS[:next_def] = nil %}
-            \{% Contracts::CONTRACTS[method] = contracts %}
-          \{% end %}
+          end
+        \{% else %}
+          \{% Contracts::CONTRACTED_METHODS << hash %}
+          \{% contracts = Contracts::CONTRACTS[:next_def] %}
+          Contracts.ignore_method contract_pre_\{{name}}
+          Contracts.ignore_method contract_post_\{{name}}
+          Contracts.ignore_method contract_requires_\{{name}}
+          Contracts.ignore_method contract_ensures_\{{name}}
+
+          def \{{("contract_pre_" + name.stringify).id}}(check_depth, \{{args.splat}})
+            if check_depth == false || Contracts::CLASS_DATA.call_depth == 1
+              test_invariant_contracts(\{{hash}})
+            end
+            \{{("contract_requires_" + name.stringify).id}}(\{{args.splat}})
+          end
+
+          def \{{("contract_post_" + name.stringify).id}}(check_depth, return_value, \{{args.splat}})
+            \{{("contract_ensures_" + name.stringify).id}}(return_value, \{{args.splat}})
+            if check_depth == false || Contracts::CLASS_DATA.call_depth == 1
+              test_invariant_contracts(\{{hash}})
+            end
+          end
+
+          def \{{("contract_requires_" + name.stringify).id}}(\{{args.splat}})
+            \{% for c in contracts %}
+              \{% stage = c[0]; condition = c[1] %}
+              \{% if stage == :requires %}
+                if (\{{condition}}) == false
+                  Contracts.on_contract_fail(:requires, \{{condition.stringify}}, \{{hash}})
+                end
+              \{% end %}
+            \{% end %}
+          end
+
+          def \{{("contract_ensures_" + name.stringify).id}}(return_value, \{{args.splat}})
+            \{% for c in contracts %}
+              \{% stage = c[0]; condition = c[1] %}
+              \{% if stage == :ensures %}
+                if (\{{condition}}) == false
+                  Contracts.on_contract_fail(:ensures, \{{condition.stringify}}, \{{hash}})
+                end
+              \{% end %}
+            \{% end %}
+          end
+
+          def \{{name}}(\{{args.splat}})
+            begin
+              Contracts::CLASS_DATA.call_depth += 1
+              \{{("contract_pre_" + name.stringify).id}}(true, \{{args.splat}})
+              return_value = previous_def
+              \{{("contract_post_" + name.stringify).id}}(true, return_value, \{{args.splat}})
+              return return_value
+            ensure
+              Contracts::CLASS_DATA.call_depth -= 1
+            end
+          end
+          \{% Contracts::CONTRACTS[:next_def] = nil %}
+          \{% Contracts::CONTRACTS[method] = contracts %}
         \{% end %}
       \{% end %}
     end
