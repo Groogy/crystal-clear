@@ -1,6 +1,6 @@
 # crystal-clear
 
-Crystal Clear is a small little library with minimal overhead for you who is bad at maintaining the specs for your project. It does this by moving that into be more inline on the project and keep the specs source local. It implements the Design by Contract approach which let's you define what the behaviour for a method, even a whole class, is supposed to be. Most of the code is generated at compile time but the little that has an overhead at runtime will not generate if you turn on the --release flag to Crystal.
+Crystal Clear is a small little library with minimal overhead for you who is bad at maintaining the specs for your project. It does this by moving that into be more inline on the project and keep the specs source local. It implements the Design by Contract approach which let's you define what the behaviour for a method, even a whole class, is supposed to be. Most of the code is generated at compile time and you can opt out performance intensive code from the tests.
 
 ## Installation
 
@@ -20,42 +20,40 @@ To include Crystal clear you just have to write this to get started.
 require "crystal-clear"
 ```
 
-Everything else happens magically with metaprogramming in the library. All you now need to do is provide the contracts that will specify how the class and its methods are supposed to behave. The tools you need to keep in mind are `requires`, `ensures`, `invariants` and `enforce_contracts`. These macros are where the magic happens. 
+Everything else happens magically with metaprogramming in the library. All you now need to do is provide the contracts that will specify how the class and its methods are supposed to behave. The tools you need to keep in mind are `requires`, `ensures`, `invariants`. These macros are where the magic happens. 
 
-* `requires(method, condition)` describes something a method expects to be true before calling it, usually used with incoming arguments. It is the expection of the contract when using that method. 
-* `ensures(method, condition)` is the expectation you can put on the method, what it ensures to be true when the method returns (no matter from what branch in the method returns from). The return value of the method is available in the variable `return_value`.
+* `requires(condition)` describes something a method expects to be true before calling it, usually used with incoming arguments. It is the expection of the contract when using that method. 
+* `ensures(condition)` is the expectation you can put on the method, what it ensures to be true when the method returns (no matter from what branch in the method returns from). The return value of the method is available in the variable `return_value`.
 * `invariants(condition)` define something that must always be true and is done on a class level, it is a contract promising when entering or leaving its methods that something will be true. 
-* `enforce_contract(method)` is a helper macro for when you want to test the invariant contracts but don't have any requires or ensures for this specific method.
 
 ```crystal
 require "crystal-clear"
 
 class FooBar
+  include CrystalClear
+
   invariant(@val != nil)
 
-  def initialize(@val = nil)
-    @val = 5
+  def initialize(@val)
   end
 
-  requires(test_method(val), val > 0)
-  ensures(test_method(val), return_value > 0)
+  requires val > 0
+  ensures return_value > 0
   def test_method(val)
     100 / val + 1
   end
 
-  requires(bad_method(val), val > 0)
-  ensures(bad_method(val), return_value > 0)
+  requires val > 0
+  ensures return_value > 0
   def bad_method(val)
     @val = nil # Will throw an exception because this is not okay!
     100 / val + 1
   end
 
-  enforce_contracts(break_internally)
   def break_internally
     @val = nil # Will throw an exception because this is not okay! 
   end
 
-  enforce_contracts(fixes_internally)
   def fixes_internally
     break_internally 
     @val = 5 # Invariants are only run when you leave the object completly so this is fine
@@ -67,10 +65,9 @@ end
 
 I've added some future proofing structure so that I can add more cool features but it needs a lot more work from me. THough as I add features it should not break the interface you work towards so it is still safe to use without risk of breakage.
 
-* New Attribute style syntax for contracts, `@[Requires(val > 0)]` which won't require method symbol.
-* Remove the need for `enforce_contracts` macro, we can generate that code automatically.
-* Spec-like breakdown of failed and fullfilled contracts. You should be able to run the contracts in a non-defensive method (i.e not throw exceptions) which then instead provides a breakdown in a logged format of what contracts are broken.
+* Better integration with the built in spec command in Crystal. Add expects\_contract_pass macros and other similar ones to let you hook in to the already built in tests for your spec.
 * Better configuration, should be able to set yourself from your own code if the contracts should be enabled or not at compile time, or even runtime.
+* Add more hooks that proves wanted in the generated Contracts module in the contracted classes.
 
 
 ## Contributing
