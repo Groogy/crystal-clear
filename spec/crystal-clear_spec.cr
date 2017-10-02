@@ -5,8 +5,7 @@ class FooBar
 
   invariant @val != nil
 
-  def initialize(@val = nil)
-    @val = 5
+  def initialize(@val)
   end
 
   requires val > 0
@@ -31,12 +30,12 @@ end
 describe CrystalClear do
 
   it "should wrap methods properly" do
-    obj = FooBar.new
+    obj = FooBar.new 5
     obj.test_meth(10).should eq(11)
   end
 
   it "should throw exception for failed requirement" do
-    obj = FooBar.new
+    obj = FooBar.new 5
 
     expect_raises(CrystalClear::ContractError) do 
       obj.test_meth(0)
@@ -44,7 +43,7 @@ describe CrystalClear do
   end
 
   it "should throw exception for failed ensurance" do
-    obj = FooBar.new
+    obj = FooBar.new 5
 
     expect_raises(CrystalClear::ContractError) do 
       obj.test_meth(-10)
@@ -52,14 +51,20 @@ describe CrystalClear do
   end
 
   it "should throw exception for failed invariant" do
-    obj = FooBar.new
+    obj = FooBar.new 5
     expect_raises(CrystalClear::ContractError) do 
       obj.break_internally()
     end
   end
 
   it "should not throw an excpetion when internal state is fixed before call ending" do
-    obj = FooBar.new
+    obj = FooBar.new 5
     obj.fixes_internally
+  end
+
+  it "should throw an exception when #initialize puts object in invalid state" do
+    expect_raises(CrystalClear::ContractError) do 
+      FooBar.new nil
+    end
   end
 end

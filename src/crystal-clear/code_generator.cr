@@ -20,9 +20,11 @@ module CrystalClear
           def \{{name}}(\{{args.splat}})
             begin
               Contracts::CLASS_DATA.call_depth += 1
-              if Contracts::CLASS_DATA.call_depth == 1
-                test_invariant_contracts(\{{name.stringify}})
-              end
+              \{% if name.stringify != "initialize" %}
+                if Contracts::CLASS_DATA.call_depth == 1
+                  test_invariant_contracts(\{{name.stringify}})
+                end
+              \{% end %}
               return_value = previous_def
               if Contracts::CLASS_DATA.call_depth == 1
                 test_invariant_contracts(\{{name.stringify}})

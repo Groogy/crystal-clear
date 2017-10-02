@@ -39,7 +39,6 @@ module CrystalClear
         \{% IGNORED_METHODS << method.stringify %}
       end
 
-      ignore_method initialize
       ignore_method finalize
 
       def self.on_contract_fail(contract, condition, method)
