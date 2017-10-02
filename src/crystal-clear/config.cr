@@ -1,5 +1,5 @@
 module CrystalClear::Config
-    {% if flag?(:release) %}
+    {% if flag?(:DISABLE_CONTRACTS) %}
         IS_ENABLED = false
     {% else %}
         IS_ENABLED = true

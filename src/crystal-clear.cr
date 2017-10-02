@@ -1,3 +1,4 @@
+require "./crystal-clear/config.cr"
 require "./crystal-clear/*"
 
 module CrystalClear

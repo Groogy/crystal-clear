@@ -1,6 +1,6 @@
 # crystal-clear
 
-Crystal Clear is a small little library with minimal overhead for you who is bad at maintaining the specs for your project. It does this by moving that into be more inline on the project and keep the specs source local. It implements the Design by Contract approach which let's you define what the behaviour for a method, even a whole class, is supposed to be. Most of the code is generated at compile time and you can opt out performance intensive code from the tests.
+Crystal Clear is a small little library with minimal overhead for you who is bad at maintaining the specs for your project. It does this by moving that into be more inline on the project and keep the specs source local. It implements the Design by Contract approach which let's you define what the behaviour for a method, even a whole class, is supposed to be. Most of the code is generated at compile time and you can opt out performance intensive code from the tests. The entire contract framework can be disabled using the -D DISABLE_CONTRACTS flag when compiling.
 
 ## Installation
 

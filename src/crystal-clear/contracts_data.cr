@@ -24,19 +24,25 @@ module CrystalClear
       CLASS_DATA = ClassData({{@type}}).new
 
       macro add_contract(stage, test)
-        \{% if CONTRACTS[:next_def] == nil %}
-          \{% CONTRACTS[:next_def] = [{stage, test}] %}
-        \{% else %}
-          \{% CONTRACTS[:next_def] << {stage, test} %}
+        \{% if CrystalClear::Config::IS_ENABLED %}
+          \{% if CONTRACTS[:next_def] == nil %}
+            \{% CONTRACTS[:next_def] = [{stage, test}] %}
+          \{% else %}
+            \{% CONTRACTS[:next_def] << {stage, test} %}
+          \{% end %}
         \{% end %}
       end
 
       macro add_invariant(test)
-        \{% INVARIANTS << test %}
+        \{% if CrystalClear::Config::IS_ENABLED %}
+          \{% INVARIANTS << test %}
+        \{% end %}
       end
 
       macro ignore_method(method)
-        \{% IGNORED_METHODS << method.stringify %}
+        \{% if CrystalClear::Config::IS_ENABLED %}
+          \{% IGNORED_METHODS << method.stringify %}
+        \{% end %}
       end
 
       ignore_method finalize
