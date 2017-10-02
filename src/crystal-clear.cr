@@ -1,64 +1,39 @@
 require "./crystal-clear/*"
 
-macro requires(func, condition)
-  {% definition = {[] of _, [] of _, [] of _, [] of _} %}
-  {% definition = CrystalClear::CLASS_COMPILE_DATA[@type] || definition %}
-  {% definition[1] << {func, condition} %}
-  {% found_definition = false %}
-  {% for val in definition[0] %}
-    {% if val == func %}
-      {% found_definition = true %}
-    {% end %}
-  {% end %}
-  {% if found_definition == false %}
-    {% definition[0] << func %}
-  {% end %}
-  {% CrystalClear::CLASS_COMPILE_DATA[@type] = definition %}
-end
+module CrystalClear
+  macro included
+    module Contracts
+      CONTRACTS = {} of _ => _
+      INVARIANTS = [] of _
+      CONTRACTED_METHODS = [] of _
 
-macro ensures(func, condition)
-  {% definition = {[] of _, [] of _, [] of _, [] of _} %}
-  {% definition = CrystalClear::CLASS_COMPILE_DATA[@type] || definition %}
-  {% definition[2] << {func, condition} %}
-  {% found_definition = false %}
-  {% for val in definition[0] %}
-    {% if val == func %}
-      {% found_definition = true %}
-    {% end %}
-  {% end %}
-  {% if found_definition == false %}
-    {% definition[0] << func %}
-  {% end %}
-  {% CrystalClear::CLASS_COMPILE_DATA[@type] = definition %}
-end
+      macro add_contract(stage, test)
+        \{% if CONTRACTS[:next_def] == nil %}
+          \{% CONTRACTS[:next_def] = [{stage, test}] %}
+        \{% else %}
+          \{% CONTRACTS[:next_def] << {stage, test} %}
+        \{% end %}
+      end
 
-macro invariant(condition)
-  {% definition = {[] of _, [] of _, [] of _, [] of _} %}
-  {% definition = CrystalClear::CLASS_COMPILE_DATA[@type] || definition %}
-  {% definition[3] << condition %}
-  {% CrystalClear::CLASS_COMPILE_DATA[@type] = definition %}
-end
+      macro add_invariant(test)
+        \{% INVARIANTS << test %}
+      end
 
-macro enforce_contracts(func)
-  {% definition = {[] of _, [] of _, [] of _, [] of _} %}
-  {% definition = CrystalClear::CLASS_COMPILE_DATA[@type] || definition %}
-  {% found_definition = false %}
-  {% for val in definition[0] %}
-    {% if val == func %}
-      {% found_definition = true %}
-    {% end %}
-  {% end %}
-  {% if found_definition == false %}
-    {% definition[0] << func %}
-  {% end %}
-  {% CrystalClear::CLASS_COMPILE_DATA[@type] = definition %}
-end
-
-macro assert(condition)
-  {% if CrystalClear::Config::IS_ENABLED %}
-    if(({{condition}}) == false)
-      raise CrystalClear::AssertException.new
+      def self.on_contract_fail(contract, condition, method)
+        raise CrystalClear::ContractError.new "Failed {{@type}} #{contract} contract: #{condition}"
+      end
     end
-  {% else %}
-  {% end %}
+
+    macro requires(test)
+      Contracts.add_contract :requires, \{{test}}
+    end
+    
+    macro ensures(test)
+      Contracts.add_contract :ensures, \{{test}}
+    end
+
+    macro invariant(test)
+      Contracts.add_invariant \{{test}}
+    end
+  end
 end

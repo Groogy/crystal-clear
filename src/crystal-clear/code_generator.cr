@@ -1,46 +1,68 @@
-macro finished
-  {% for klass, definition in CrystalClear::CLASS_COMPILE_DATA %}
-    class {{klass}}
-      CONTRACT_DATA = CrystalClear::ClassData({{klass}}).new()
-      {% if CrystalClear::Config::IS_ENABLED %}
-        {% for func in definition[0] %}
-          def {{func}}
-            CONTRACT_DATA.call_depth += 1
-            if CONTRACT_DATA.call_depth == 1
-              {% for condition in definition[3] %}
-                if(({{condition}}) == false)
-                  raise CrystalClear::ContractException.new("Failed {{klass}} invariant contract: " + {{condition.stringify}})
-                end
-              {% end %}
-            end
-            {% for condition in definition[1] %}
-              {% if condition[0] == func %}
-                if(({{condition[1]}}) == false)
-                  raise CrystalClear::ContractException.new("Failed {{klass}} require contract: " + {{condition[1].stringify}})
-                end
-              {% end%}
-            {% end %}
-            return_value = previous_def
-            {% for condition in definition[2] %}
-              {% if condition[0] == func %}
-                if(({{condition[1]}}) == false)
-                  raise CrystalClear::ContractException.new("Failed {{klass}} ensure contract: " + {{condition[1].stringify}})
-                end
-              {% end %}
-            {% end %}
-            if CONTRACT_DATA.call_depth == 1
-              {% for condition in definition[3] %}
-                if(({{condition}}) == false)
-                  raise CrystalClear::ContractException.new("Failed {{klass}} invariant contract: " + {{condition.stringify}})
-                end
-              {% end %}
-            end
-            return return_value
-          ensure
-            CONTRACT_DATA.call_depth -= 1
-          end
-        {% end %}
-      {% end %}
+module CrystalClear
+  macro included
+    def test_invariant_contracts(method="")
+      \{% for condition in Contracts::INVARIANTS %}
+        if (\{{condition}}) == false
+          Contracts.on_contract_fail(:invariant, \{{condition.stringify}}, method)
+        end
+      \{% end %}
     end
-  {% end %}
+
+    macro method_added(method)
+      \{% name = method.name %}
+      \{% args = method.args %}
+      \{% if Contracts::CONTRACTED_METHODS.includes?(method) == false %}
+        \{% if Contracts::CONTRACTS[:next_def] == nil %}
+          \{% Contracts::CONTRACTED_METHODS << method %}
+        \{% else %}
+          \{% Contracts::CONTRACTED_METHODS << method %}
+          \{% contracts = Contracts::CONTRACTS[:next_def] %}
+
+          \{% if (name.starts_with?("contract_pre_") || name.starts_with?("contract_post_") ||
+                  name.starts_with?("contract_requires_") || name.starts_with?("contract_ensures_")) == false %}
+            def \{{("contract_pre_" + name.stringify).id}}(\{{args.splat}})
+            test_invariant_contracts(\{{name.stringify}})
+              \{{("contract_requires_" + name.stringify).id}}(\{{args.splat}})
+            end
+
+            def \{{("contract_post_" + name.stringify).id}}(return_value, \{{args.splat}})
+              \{{("contract_ensures_" + name.stringify).id}}(return_value, \{{args.splat}})
+              test_invariant_contracts(\{{name.stringify}})
+            end
+
+            def \{{("contract_requires_" + name.stringify).id}}(\{{args.splat}})
+              \{% for c in contracts %}
+                \{% stage = c[0]; condition = c[1] %}
+                \{% if stage == :requires %}
+                  if (\{{condition}}) == false
+                    Contracts.on_contract_fail(:requires, \{{condition.stringify}}, \{{name.stringify}})
+                  end
+                \{% end %}
+              \{% end %}
+            end
+
+            def \{{("contract_ensures_" + name.stringify).id}}(return_value, \{{args.splat}})
+              \{% for c in contracts %}
+                \{% stage = c[0]; condition = c[1] %}
+                \{% if stage == :ensures %}
+                  if (\{{condition}}) == false
+                    Contracts.on_contract_fail(:ensures, \{{condition.stringify}}, \{{name.stringify}})
+                  end
+                \{% end %}
+              \{% end %}
+            end
+
+            def \{{method.name}}(\{{args.splat}})
+              \{{("contract_pre_" + name.stringify).id}}(\{{args.splat}})
+              return_value = previous_def
+              \{{("contract_post_" + name.stringify).id}}(return_value, \{{args.splat}})
+              return return_value
+            end
+            \{% Contracts::CONTRACTS[:next_def] = nil %}
+            \{% Contracts::CONTRACTS[method] = contracts %}
+          \{% end %}
+        \{% end %}
+      \{% end %}
+    end
+  end
 end

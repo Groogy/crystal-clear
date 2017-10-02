@@ -1,10 +1,4 @@
 module CrystalClear
-    class Exception < ::Exception
-    end
-
-    class AssertException < Exception
-    end
-
-    class ContractException < Exception
+    class ContractError < Exception
     end
 end
