@@ -3,7 +3,7 @@ module CrystalClear
     def test_invariant_contracts(method="")
       \{% for condition in Contracts::INVARIANTS %}
         if (\{{condition}}) == false
-          Contracts.on_contract_fail(:invariant, \{{condition.stringify}}, method)
+          Contracts.on_contract_fail(:invariant, \{{condition.stringify}}, {{@type}}, method)
         end
       \{% end %}
     end
@@ -64,7 +64,7 @@ module CrystalClear
               \{% stage = c[0]; condition = c[1] %}
               \{% if stage == :requires %}
                 if (\{{condition}}) == false
-                  Contracts.on_contract_fail(:requires, \{{condition.stringify}}, \{{hash}})
+                  Contracts.on_contract_fail(:requires, \{{condition.stringify}}, {{@type}}, \{{hash}})
                 end
               \{% end %}
             \{% end %}
@@ -75,7 +75,7 @@ module CrystalClear
               \{% stage = c[0]; condition = c[1] %}
               \{% if stage == :ensures %}
                 if (\{{condition}}) == false
-                  Contracts.on_contract_fail(:ensures, \{{condition.stringify}}, \{{hash}})
+                  Contracts.on_contract_fail(:ensures, \{{condition.stringify}}, {{@type}}, \{{hash}})
                 end
               \{% end %}
             \{% end %}

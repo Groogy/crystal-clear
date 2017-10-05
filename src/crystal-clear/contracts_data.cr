@@ -47,8 +47,12 @@ module CrystalClear
 
       ignore_method finalize
 
-      def self.on_contract_fail(contract, condition, method)
-        raise CrystalClear::ContractError.new "Failed {{@type}} #{contract} contract: #{condition}"
+      def self.on_contract_fail(contract, condition, type, method)
+        raise CrystalClear::ContractError.new "Failed #{type} #{contract} contract: #{condition}"
+      end
+
+      def self.on_assert_fail(condition, type)
+        raise CrystalClear::AssertError.new "Failed #{type} assert: #{condition}"
       end
     end
   end
