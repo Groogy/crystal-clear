@@ -11,6 +11,7 @@ module CrystalClear
     macro method_added(method)
       \{% name = method.name %}
       \{% args = method.args %}
+      \{% args_call = args.map { |arg| arg.name } %}
       \{% hash = name.stringify + "(" + args.splat.stringify + ")" %}
       \{% if  !Contracts::CONTRACTED_METHODS.includes?(hash) && 
               !Contracts::IGNORED_METHODS.includes?(name.stringify) &&
@@ -48,11 +49,11 @@ module CrystalClear
             if check_depth == false || Contracts::CLASS_DATA.call_depth == 1
               test_invariant_contracts(\{{hash}})
             end
-            contract_requires_\{{name}}(\{{args.splat}})
+            contract_requires_\{{name}}(\{{args_call.splat}})
           end
 
           def contract_post_\{{name}}(check_depth, return_value, \{{args.splat}})
-          contract_ensures_\{{name}}(return_value, \{{args.splat}})
+          contract_ensures_\{{name}}(return_value, \{{args_call.splat}})
             if check_depth == false || Contracts::CLASS_DATA.call_depth == 1
               test_invariant_contracts(\{{hash}})
             end
@@ -84,9 +85,9 @@ module CrystalClear
             def \{{name}}(\{{args.splat}})
               begin
                 Contracts::CLASS_DATA.call_depth += 1
-                contract_pre_\{{name}}(true, \{{args.splat}})
+                contract_pre_\{{name}}(true, \{{args_call.splat}})
                 return_value = previous_def
-                contract_post_\{{name}}(true, return_value, \{{args.splat}})
+                contract_post_\{{name}}(true, return_value, \{{args_call.splat}})
                 return return_value
               ensure
                 Contracts::CLASS_DATA.call_depth -= 1

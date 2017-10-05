@@ -25,6 +25,15 @@ class FooBar
     @val = 5
     val
   end
+
+  requires(arg > 0)
+  def meth_with_default(arg = 5)
+    if val = @val
+      arg / val
+    else
+      0
+    end
+  end
 end
 
 describe CrystalClear do
@@ -66,5 +75,10 @@ describe CrystalClear do
     expect_raises(CrystalClear::ContractError) do 
       FooBar.new nil
     end
+  end
+
+  it "should not override provided argument with default value" do
+    obj = FooBar.new 5
+    obj.meth_with_default(10).should eq 2
   end
 end
