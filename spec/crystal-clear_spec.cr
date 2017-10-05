@@ -10,7 +10,7 @@ class FooBar
 
   requires val > 0
   ensures return_value > 0
-  def test_meth(val)
+  def test_meth(val : Int32)
     100 / val + 1
   end
 
@@ -26,7 +26,7 @@ class FooBar
     val
   end
 
-  requires(arg > 0)
+  requires(val > 0)
   def meth_with_default(arg = 5)
     if val = @val
       arg / val
