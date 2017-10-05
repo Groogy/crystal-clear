@@ -8,16 +8,16 @@ module CrystalClear
       \{% end %}
     end
 
-    {% if CrystalClear::Config::IS_ENABLED %}
-      macro method_added(method)
-        \{% name = method.name %}
-        \{% args = method.args %}
-        \{% hash = name.stringify + "(" + args.splat.stringify + ")" %}
-        \{% if  !Contracts::CONTRACTED_METHODS.includes?(hash) && 
-                !Contracts::IGNORED_METHODS.includes?(name.stringify) &&
-                !Contracts::IGNORED_METHODS.includes?(hash) %}
-          \{% if Contracts::CONTRACTS[:next_def] == nil %}
-            \{% Contracts::CONTRACTED_METHODS << hash %}
+    macro method_added(method)
+      \{% name = method.name %}
+      \{% args = method.args %}
+      \{% hash = name.stringify + "(" + args.splat.stringify + ")" %}
+      \{% if  !Contracts::CONTRACTED_METHODS.includes?(hash) && 
+              !Contracts::IGNORED_METHODS.includes?(name.stringify) &&
+              !Contracts::IGNORED_METHODS.includes?(hash) %}
+        \{% if Contracts::CONTRACTS[:next_def] == nil %}
+          \{% Contracts::CONTRACTED_METHODS << hash %}
+          \{% if CrystalClear::Config::IS_ENABLED %}
             def \{{name}}(\{{args.splat}})
               begin
                 Contracts::CLASS_DATA.call_depth += 1
@@ -35,66 +35,68 @@ module CrystalClear
                 Contracts::CLASS_DATA.call_depth -= 1
               end
             end
-          \{% else %}
-            \{% Contracts::CONTRACTED_METHODS << hash %}
-            \{% contracts = Contracts::CONTRACTS[:next_def] %}
-            Contracts.ignore_method contract_pre_\{{name}}
-            Contracts.ignore_method contract_post_\{{name}}
-            Contracts.ignore_method contract_requires_\{{name}}
-            Contracts.ignore_method contract_ensures_\{{name}}
+          \{% end %}
+        \{% else %}
+          \{% Contracts::CONTRACTED_METHODS << hash %}
+          \{% contracts = Contracts::CONTRACTS[:next_def] %}
+          Contracts.ignore_method contract_pre_\{{name}}
+          Contracts.ignore_method contract_post_\{{name}}
+          Contracts.ignore_method contract_requires_\{{name}}
+          Contracts.ignore_method contract_ensures_\{{name}}
 
-            def \{{("contract_pre_" + name.stringify).id}}(check_depth, \{{args.splat}})
-              if check_depth == false || Contracts::CLASS_DATA.call_depth == 1
-                test_invariant_contracts(\{{hash}})
-              end
-              \{{("contract_requires_" + name.stringify).id}}(\{{args.splat}})
+          def contract_pre_\{{name}}(check_depth, \{{args.splat}})
+            if check_depth == false || Contracts::CLASS_DATA.call_depth == 1
+              test_invariant_contracts(\{{hash}})
             end
+            contract_requires_\{{name}}(\{{args.splat}})
+          end
 
-            def \{{("contract_post_" + name.stringify).id}}(check_depth, return_value, \{{args.splat}})
-              \{{("contract_ensures_" + name.stringify).id}}(return_value, \{{args.splat}})
-              if check_depth == false || Contracts::CLASS_DATA.call_depth == 1
-                test_invariant_contracts(\{{hash}})
-              end
+          def contract_post_\{{name}}(check_depth, return_value, \{{args.splat}})
+          contract_ensures_\{{name}}(return_value, \{{args.splat}})
+            if check_depth == false || Contracts::CLASS_DATA.call_depth == 1
+              test_invariant_contracts(\{{hash}})
             end
+          end
 
-            def \{{("contract_requires_" + name.stringify).id}}(\{{args.splat}})
-              \{% for c in contracts %}
-                \{% stage = c[0]; condition = c[1] %}
-                \{% if stage == :requires %}
-                  if (\{{condition}}) == false
-                    Contracts.on_contract_fail(:requires, \{{condition.stringify}}, \{{hash}})
-                  end
-                \{% end %}
+          def contract_requires_\{{name}}(\{{args.splat}})
+            \{% for c in contracts %}
+              \{% stage = c[0]; condition = c[1] %}
+              \{% if stage == :requires %}
+                if (\{{condition}}) == false
+                  Contracts.on_contract_fail(:requires, \{{condition.stringify}}, \{{hash}})
+                end
               \{% end %}
-            end
+            \{% end %}
+          end
 
-            def \{{("contract_ensures_" + name.stringify).id}}(return_value, \{{args.splat}})
-              \{% for c in contracts %}
-                \{% stage = c[0]; condition = c[1] %}
-                \{% if stage == :ensures %}
-                  if (\{{condition}}) == false
-                    Contracts.on_contract_fail(:ensures, \{{condition.stringify}}, \{{hash}})
-                  end
-                \{% end %}
+          def contract_ensures_\{{name}}(return_value, \{{args.splat}})
+            \{% for c in contracts %}
+              \{% stage = c[0]; condition = c[1] %}
+              \{% if stage == :ensures %}
+                if (\{{condition}}) == false
+                  Contracts.on_contract_fail(:ensures, \{{condition.stringify}}, \{{hash}})
+                end
               \{% end %}
-            end
+            \{% end %}
+          end
 
+          \{% if CrystalClear::Config::IS_ENABLED %}
             def \{{name}}(\{{args.splat}})
               begin
                 Contracts::CLASS_DATA.call_depth += 1
-                \{{("contract_pre_" + name.stringify).id}}(true, \{{args.splat}})
+                contract_pre_\{{name}}(true, \{{args.splat}})
                 return_value = previous_def
-                \{{("contract_post_" + name.stringify).id}}(true, return_value, \{{args.splat}})
+                contract_post_\{{name}}(true, return_value, \{{args.splat}})
                 return return_value
               ensure
                 Contracts::CLASS_DATA.call_depth -= 1
               end
             end
-            \{% Contracts::CONTRACTS[:next_def] = nil %}
-            \{% Contracts::CONTRACTS[method] = contracts %}
           \{% end %}
+          \{% Contracts::CONTRACTS[:next_def] = nil %}
+          \{% Contracts::CONTRACTS[method] = contracts %}
         \{% end %}
-      end
-    {% end %}
+      \{% end %}
+    end
   end
 end
