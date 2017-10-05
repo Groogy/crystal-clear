@@ -26,7 +26,7 @@ class FooBar
     val
   end
 
-  requires(val > 0)
+  requires(arg > 0)
   def meth_with_default(arg = 5)
     if val = @val
       arg / val
