@@ -5,6 +5,7 @@ class FooBar
 
   invariant @val != nil
 
+  @parent : FooBar?
   def initialize(@val)
   end
 
@@ -33,6 +34,16 @@ class FooBar
     else
       0
     end
+  end
+
+  requires self.parent.nil? || foo.nil?
+  requires foo != self
+  def parent=(foo)
+    @parent = foo
+  end
+
+  def parent
+    @parent
   end
 end
 
@@ -80,5 +91,35 @@ describe CrystalClear do
   it "should not override provided argument with default value" do
     obj = FooBar.new 5
     obj.meth_with_default(10).should eq 2
+  end
+
+  it "should not throw when assigning new parent" do
+    a = FooBar.new 1
+    b = FooBar.new 2
+    a.parent = b
+  end
+
+  it "should not throw when we make parent nil again" do
+    a = FooBar.new 1
+    b = FooBar.new 2
+    a.parent = b
+    a.parent = nil
+  end
+
+  it "should throw when we assign parent to ourselves" do
+    a = FooBar.new 1
+    expect_raises(CrystalClear::ContractError) do
+      a.parent = a
+    end
+  end
+
+  it "should throw when we assign new parent when we already have one" do
+    a = FooBar.new 1
+    b = FooBar.new 2
+    c = FooBar.new 3
+    a.parent = b
+    expect_raises(CrystalClear::ContractError) do
+      a.parent = c
+    end
   end
 end
