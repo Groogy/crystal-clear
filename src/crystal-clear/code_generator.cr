@@ -24,12 +24,12 @@ module CrystalClear
                 Contracts::CLASS_DATA.call_depth += 1
                 \{% if name.stringify != "initialize" %}
                   if Contracts::CLASS_DATA.call_depth == 1
-                    self.test_invariant_contracts(\{{name.stringify}})
+                    test_invariant_contracts(\{{name.stringify}})
                   end
                 \{% end %}
                 return_value = previous_def
                 if Contracts::CLASS_DATA.call_depth == 1
-                  self.test_invariant_contracts(\{{name.stringify}})
+                  test_invariant_contracts(\{{name.stringify}})
                 end
                 return return_value
               ensure
