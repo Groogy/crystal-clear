@@ -23,19 +23,19 @@ module CrystalClear
       IGNORED_METHODS = [] of _
       CLASS_DATA = ClassData({{@type}}).new
 
-      macro add_contract(stage, test)
+      macro add_contract(stage, str, &test)
         \{% if CrystalClear::Config::IS_ENABLED %}
           \{% if CONTRACTS[:next_def] == nil %}
-            \{% CONTRACTS[:next_def] = [{stage, test}] %}
+            \{% CONTRACTS[:next_def] = [{stage, str, test}] %}
           \{% else %}
-            \{% CONTRACTS[:next_def] << {stage, test} %}
+            \{% CONTRACTS[:next_def] << {stage, str, test} %}
           \{% end %}
         \{% end %}
       end
 
-      macro add_invariant(test)
+      macro add_invariant(str, &test)
         \{% if CrystalClear::Config::IS_ENABLED %}
-          \{% INVARIANTS << test %}
+          \{% INVARIANTS << {str, test} %}
         \{% end %}
       end
 

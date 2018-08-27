@@ -1,9 +1,11 @@
 module CrystalClear
   macro included
     def test_invariant_contracts(method="")
-      \{% for condition in Contracts::INVARIANTS %}
-        if (\{{condition}}) == false
-          Contracts.on_contract_fail(:invariant, \{{condition.stringify}}, {{@type}}, method)
+      \{% for c in Contracts::INVARIANTS %}
+        \{% str = c[0]; condition = c[1] %}
+        test = CrystalClear.perform_test(self) \{{condition}}
+        if !test
+          Contracts.on_contract_fail(:invariant, \{{str}}, {{@type}}, method)
         end
       \{% end %}
     end
@@ -62,10 +64,11 @@ module CrystalClear
 
           def contract_requires_\{{safe_name}}(\{{args.splat}})
             \{% for c in contracts %}
-              \{% stage = c[0]; condition = c[1] %}
+              \{% stage = c[0]; str = c[1]; condition = c[2] %}
               \{% if stage == :requires %}
-                if (\{{condition}}) == false
-                  Contracts.on_contract_fail(:requires, \{{condition.stringify}}, {{@type}}, \{{hash}})
+                test = CrystalClear.perform_test(self) \{{condition}}
+                if !test
+                  Contracts.on_contract_fail(:requires, \{{str}}, {{@type}}, \{{hash}})
                 end
               \{% end %}
             \{% end %}
@@ -73,10 +76,11 @@ module CrystalClear
 
           def contract_ensures_\{{safe_name}}(return_value, \{{args.splat}})
             \{% for c in contracts %}
-              \{% stage = c[0]; condition = c[1] %}
+              \{% stage = c[0]; str = c[1]; condition = c[2] %}
               \{% if stage == :ensures %}
-                if (\{{condition}}) == false
-                  Contracts.on_contract_fail(:ensures, \{{condition.stringify}}, {{@type}}, \{{hash}})
+                test = CrystalClear.perform_test(self) \{{condition}}
+                if !test
+                  Contracts.on_contract_fail(:ensures, \{{str}}, {{@type}}, \{{hash}})
                 end
               \{% end %}
             \{% end %}
@@ -100,5 +104,9 @@ module CrystalClear
         \{% end %}
       \{% end %}
     end
+  end
+
+  def self.perform_test(obj)
+    with obj yield
   end
 end

@@ -4,15 +4,21 @@ require "./crystal-clear/*"
 module CrystalClear
   macro included
     macro requires(test)
-      Contracts.add_contract :requires, \{{test.stringify}}
+      Contracts.add_contract(:requires, \{{test.stringify}}) do 
+        \{{test}}
+      end
     end
     
     macro ensures(test)
-      Contracts.add_contract :ensures, \{{test.stringify}}
+      Contracts.add_contract(:ensures, \{{test.stringify}}) do
+        \{{test}}
+      end
     end
 
     macro invariant(test)
-      Contracts.add_invariant \{{test.stringify}}
+      Contracts.add_invariant(\{{test.stringify}}) do
+        \{{test}}
+      end
     end
 
     macro assert(test)
