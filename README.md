@@ -63,7 +63,7 @@ end
 
 ## Future Features
 
-I've added some future proofing structure so that I can add more cool features but it needs a lot more work from me. THough as I add features it should not break the interface you work towards so it is still safe to use without risk of breakage.
+I've added some future proofing structure so that I can add more cool features but it needs a lot more work from me. Though as I add features it should not break the interface you work towards so it is still safe to use without risk of breakage.
 
 * Better integration with the built in spec command in Crystal. Add expects\_contract_pass macros and other similar ones to let you hook in to the already built in tests for your spec.
 * Better configuration, should be able to set yourself from your own code if the contracts should be enabled or not at compile time, or even runtime.
