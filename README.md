@@ -40,14 +40,14 @@ class FooBar
   requires val > 0
   ensures return_value > 0
   def test_method(val)
-    100 / val + 1
+    100 // val + 1
   end
 
   requires val > 0
   ensures return_value > 0
   def bad_method(val)
     @val = nil # Will throw an exception because this is not okay!
-    100 / val + 1
+    100 // val + 1
   end
 
   def break_internally

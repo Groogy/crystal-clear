@@ -1,9 +1,9 @@
 name: crystal-clear
-version: 1.0.0
+version: 1.0.1
 
 authors:
   -  Henrik Valter Vogelius Hansson
 
-crystal: 0.26.0
+crystal: 0.32.1
 
 license: zlib
