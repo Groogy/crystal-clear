@@ -26,6 +26,11 @@ module CrystalClear
         Contracts.on_assert_fail(\{{test.stringify}}, \{{@type}}) if (\{{test}}) == false
       \{% end %}
     end
+
+    # When the type is inherited, carry over CrystalClear
+    macro inherited
+      include CrystalClear
+    end
   end
 
   def self.on_assert_fail(condition)
