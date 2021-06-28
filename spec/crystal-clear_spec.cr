@@ -47,6 +47,20 @@ class FooBar
   end
 end
 
+class Person
+  include CrystalClear
+  property age : Int32
+  def initialize(@age)
+  end
+  def get_older
+    @age += 1
+  end
+end
+
+class Child < Person
+  invariant @age < 18
+end
+
 describe CrystalClear do
 
   it "should wrap methods properly" do
@@ -120,6 +134,13 @@ describe CrystalClear do
     a.parent = b
     expect_raises(CrystalClear::ContractError) do
       a.parent = c
+    end
+  end
+
+  it "should allow types inheriting from crystal-clear types to use contracts" do
+    child = Child.new 17
+    expect_raises(CrystalClear::ContractError) do
+      child.get_older
     end
   end
 end
